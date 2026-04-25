@@ -1,0 +1,27 @@
+{
+  "paths": {
+    "reference_dir": "img/references",
+    "cuda_path": "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\bin",
+    "cudnn_path": "C:\\Program Files\\NVIDIA\\CUDNN\\v9.21\\bin\\12.9\\x64"
+  },
+"model": {
+  "name": "buffalo_l",
+  "use_gpu": true,
+  "det_size": [640, 640],
+  "detection_threshold": 0.1
+},
+  "camera": {
+    "index": 0,
+    "width": 640,
+    "height": 480
+  },
+"recognition": {
+  "threshold": 0.65,
+  "margin": 0.03,
+  "process_every_n_frames": 3
+},
+  "ui": {
+    "window_name": "Face Recognition",
+    "show_fps": true
+  }
+}

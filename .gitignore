@@ -1,0 +1,36 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.log
+
+# =========================
+# Virtual env
+# =========================
+.venv/
+env/
+
+# =========================
+# OS / IDE
+# =========================
+.vscode/
+.idea/
+.DS_Store
+
+# =========================
+# Imagens (NÃO subir dados sensíveis)
+# =========================
+img/references/*
+
+# Mantém a estrutura das pastas
+!img/references/
+!img/references/.gitkeep
+
+# =========================
+# Config sensível (opcional)
+# =========================
+config.local.json
