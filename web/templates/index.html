@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Biometric Access Control MVP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <h1>Biometric Access Control MVP</h1>
+          <p id="source">Initializing video source...</p>
+        </div>
+        <div class="status-strip">
+          <span id="runtime">Runtime: --</span>
+          <span id="running">Starting</span>
+          <button id="stopButton" type="button">Stop Camera</button>
+        </div>
+      </section>
+
+      <section class="layout">
+        <div class="video-panel">
+          <img id="video" src="/video" alt="Live camera feed" />
+        </div>
+
+        <aside class="side-panel">
+          <div class="metrics-grid">
+            <div>
+              <strong id="fps">0.0</strong>
+              <span>FPS</span>
+            </div>
+            <div>
+              <strong id="activeTracks">0</strong>
+              <span>Tracks</span>
+            </div>
+            <div>
+              <strong id="registeredPeople">0</strong>
+              <span>People</span>
+            </div>
+            <div>
+              <strong id="confirmed">0</strong>
+              <span>Confirmed</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Alerts</h2>
+            <div id="alerts" class="alert-list"></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="events-panel">
+        <h2>Recent Events</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Track</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Score</th>
+              <th>Votes</th>
+              <th>Frame</th>
+              <th>Snapshot</th>
+            </tr>
+          </thead>
+          <tbody id="events"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

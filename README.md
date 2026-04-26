@@ -190,10 +190,19 @@ logs/recognition_events.csv
 Columns:
 
 ```text
-timestamp, track_id, name, status, avg_score, votes, frame_number, x1, y1, x2, y2
+timestamp, track_id, name, status, avg_score, votes, frame_number, x1, y1, x2, y2, snapshot_path
 ```
 
 The logger records status changes, confirmations, and failed unknown attempts after enough frames. It avoids writing a duplicate event on every frame.
+
+Face snapshots for logged events are saved under:
+
+```text
+logs/snapshots/
+  confirmed/
+  candidate/
+  unknown/
+```
 
 ## Run
 
@@ -211,6 +220,39 @@ The terminal prints:
 - active tracks
 - average FPS
 - confirmed recognitions
+
+## Dashboard
+
+Run the local operator dashboard with:
+
+```powershell
+uvicorn dashboard:app --host 127.0.0.1 --port 8000
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000
+```
+
+The dashboard shows:
+
+- live camera feed
+- FPS and runtime mode
+- alert cards with face snapshots
+- confirmed recognition count
+- registered people count
+- recent CSV events
+
+The dashboard is still evaluation-only. It displays and logs recognition state, but it does not trigger biometric access-control actions.
+
+To stop cleanly:
+
+1. Click `Stop Camera` in the dashboard.
+2. Return to the terminal running `uvicorn`.
+3. Press `Ctrl+C`.
+
+On Windows, if a camera or RTSP stream blocks shutdown, press `Ctrl+Break` in the terminal. Closing the terminal is the last-resort option.
 
 ## Visualization
 
