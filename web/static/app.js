@@ -15,14 +15,15 @@ function titleForEvent(event) {
 
 function renderAlerts(events) {
   const container = document.getElementById("alerts");
+  const unknownEvents = events.filter((event) => event.status === "unknown");
   container.innerHTML = "";
 
-  if (!events.length) {
-    container.innerHTML = '<div class="empty">No alerts yet</div>';
+  if (!unknownEvents.length) {
+    container.innerHTML = '<div class="empty">No unknown alerts</div>';
     return;
   }
 
-  events.slice(0, 6).forEach((event) => {
+  unknownEvents.slice(0, 6).forEach((event) => {
     const item = document.createElement("div");
     item.className = `alert-card ${statusClass(event.status)}`;
     const snapshot = event.snapshot_url

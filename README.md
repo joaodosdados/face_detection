@@ -195,12 +195,10 @@ timestamp, track_id, name, status, avg_score, votes, frame_number, x1, y1, x2, y
 
 The logger records status changes, confirmations, and failed unknown attempts after enough frames. It avoids writing a duplicate event on every frame.
 
-Face snapshots for logged events are saved under:
+Face snapshots are saved only for `unknown` alerts:
 
 ```text
 logs/snapshots/
-  confirmed/
-  candidate/
   unknown/
 ```
 
@@ -239,7 +237,7 @@ The dashboard shows:
 
 - live camera feed
 - FPS and runtime mode
-- alert cards with face snapshots
+- unknown alert cards with face snapshots
 - confirmed recognition count
 - registered people count
 - recent CSV events

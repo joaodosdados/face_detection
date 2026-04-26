@@ -122,6 +122,9 @@ class RecognitionLogger:
         frame_number: int,
         frame_bgr: np.ndarray | None,
     ) -> str:
+        if track.status != "unknown":
+            return ""
+
         if frame_bgr is None:
             return ""
 
