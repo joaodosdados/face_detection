@@ -1,36 +1,35 @@
-# =========================
 # Python
-# =========================
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 *.egg-info/
-*.log
 
-# =========================
-# Virtual env
-# =========================
+# Virtual environments
 .venv/
 env/
 
-# =========================
 # OS / IDE
-# =========================
 .vscode/
 .idea/
 .DS_Store
 
-# =========================
-# Imagens (NÃO subir dados sensíveis)
-# =========================
-img/references/*
+# Sensitive local configuration
+config.json
+config.local.json
+!config.example.json
 
-# Mantém a estrutura das pastas
+# Sensitive biometric reference data
+img/references/*
 !img/references/
 !img/references/.gitkeep
 
-# =========================
-# Config sensível (opcional)
-# =========================
-config.local.json
+# Runtime logs
+logs/*
+!logs/
+!logs/.gitkeep
+
+# Runtime cache/data
+data/*
+!data/
+!data/.gitkeep

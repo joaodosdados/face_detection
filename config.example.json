@@ -1,0 +1,49 @@
+{
+  "paths": {
+    "reference_dir": "img/references",
+    "cuda_path": "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\bin",
+    "cudnn_path": "C:\\Program Files\\NVIDIA\\CUDNN\\v9.21\\bin\\12.9\\x64"
+  },
+  "model": {
+    "name": "buffalo_l",
+    "use_gpu": true,
+    "det_size": [640, 640],
+    "detection_threshold": 0.1
+  },
+  "video_source": {
+    "type": "rtsp",
+    "url": "rtsp://user:password@camera-ip:554/cam/realmonitor?channel=1&subtype=0",
+    "buffer_size": 1
+  },
+  "recognition": {
+    "process_every_n_frames": 2,
+    "recognition_window_frames": 12,
+    "min_votes_to_confirm": 5,
+    "min_average_score": 0.35,
+    "candidate_min_score": 0.25,
+    "max_unknown_frames": 20
+  },
+  "quality": {
+    "min_face_width": 70,
+    "min_face_height": 70,
+    "min_blur_score": 25.0,
+    "min_detection_score": 0.1
+  },
+  "tracking": {
+    "max_center_distance": 180,
+    "max_missing_frames": 20
+  },
+  "cache": {
+    "enabled": true,
+    "path": "data/embeddings_cache.pkl",
+    "force_rebuild": false
+  },
+  "logging": {
+    "directory": "logs",
+    "events_file": "recognition_events.csv"
+  },
+  "ui": {
+    "window_name": "Biometric Access Control MVP",
+    "show_fps": true
+  }
+}

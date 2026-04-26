@@ -1,384 +1,245 @@
-# 🧠 Face Recognition com InsightFace + GPU (Windows)
+# Biometric Access Control MVP
 
-Sistema de **reconhecimento facial em tempo real** com suporte a múltiplas pessoas, embeddings robustos e aceleração por GPU (CUDA).
+Python MVP for real-world face recognition testing with InsightFace, OpenCV, temporal voting, lightweight tracking, quality filtering, RTSP/webcam input, embedding cache, and CSV event logs.
 
----
+This project is for field evaluation only. It does not open doors, unlock turnstiles, or trigger any real biometric access-control action.
 
-## 🚀 Funcionalidades
+## What This MVP Does
 
-- Reconhecimento facial em tempo real via webcam
-- Suporte a múltiplas pessoas
-- Múltiplas imagens por pessoa para melhorar a robustez
-- Embedding médio por identidade
-- Comparação por similaridade de cosseno
-- Threshold e margem de decisão configuráveis
-- Aceleração com GPU NVIDIA via CUDA
-- Fallback automático para CPU
-- Configuração centralizada via `config.json`
-- Exibição de FPS em tempo real
+- Reads video from a webcam or RTSP camera, including Intelbras-style RTSP URLs
+- Detects faces with InsightFace `buffalo_l`
+- Converts BGR to RGB before every model inference
+- Keeps BGR frames for OpenCV display
+- Filters small and blurry faces before recognition
+- Tracks faces across frames with simple center-distance matching
+- Uses temporal voting instead of trusting one frame
+- Confirms an identity only after enough consistent votes
+- Logs recognition events to CSV
+- Caches reference embeddings to speed up startup
+- Shows bounding boxes, track IDs, scores, votes, and FPS
+- Prints runtime metrics in the terminal
 
----
+Target scale for this MVP: around 10 registered people.
 
-## 📦 Estrutura do Projeto
+## Project Structure
 
 ```text
 face_detection/
-│
-├── face_detection.py
-├── config.json
-├── requirements.txt
-└── img/
-    └── references/
-        ├── joao_lucas/
-        │   ├── joao_lucas_1.png
-        │   └── joao_lucas_2.png
-        │
-        └── amanda/
-            └── amanda_1.png
+|-- face_detection.py
+|-- config.example.json
+|-- config.json                 # local/private, ignored by git
+|-- requirements.txt
+|-- req.txt
+|-- README.md
+|-- src/
+|   |-- config.py
+|   |-- drawing.py
+|   |-- logging_utils.py
+|   |-- model.py
+|   |-- quality.py
+|   |-- recognition.py
+|   |-- references.py
+|   |-- tracking.py
+|   `-- video.py
+|-- img/
+|   `-- references/
+|       `-- .gitkeep
+|-- data/
+|   `-- .gitkeep
+`-- logs/
+    `-- .gitkeep
 ```
 
----
+## Installation
 
-## ⚙️ Requisitos
-
-### Sistema
-
-- Windows 10 ou Windows 11
-- GPU NVIDIA opcional, mas recomendada
-- CUDA e cuDNN configurados para uso com `onnxruntime-gpu`
-
-### Python
-
-- Python 3.10 a 3.12
-
----
-
-## 📦 Instalação
-
-### 1. Criar ambiente virtual
-
-```bash
+```powershell
 python -m venv .venv
 .\.venv\Scripts\activate
-```
-
----
-
-### 2. Criar `requirements.txt`
-
-```txt
-insightface==0.7.3
-onnxruntime-gpu
-opencv-python
-numpy
-```
-
----
-
-### 3. Instalar dependências
-
-```bash
 pip install -r requirements.txt
 ```
 
----
+`req.txt` is kept for compatibility with the earlier project setup. New installs should use `requirements.txt`.
 
-## ⚙️ Exemplo de `config.json`
+## Configuration
+
+Create your local config from the safe example:
+
+```powershell
+Copy-Item config.example.json config.json
+```
+
+`config.json` is ignored by git because it may contain camera credentials and local CUDA paths.
+
+### Webcam
 
 ```json
-{
-  "paths": {
-    "reference_dir": "img/references",
-    "cuda_path": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.6/bin",
-    "cudnn_path": "C:/Program Files/NVIDIA/CUDNN/v9.xx/bin/12.9/x64"
-  },
-  "model": {
-    "name": "buffalo_l",
-    "use_gpu": true,
-    "det_size": [640, 640],
-    "detection_threshold": 0.1
-  },
-  "recognition": {
-    "threshold": 0.35,
-    "margin": 0.01,
-    "process_every_n_frames": 3
-  },
-  "camera": {
-    "index": 0,
-    "width": 640,
-    "height": 480
-  },
-  "ui": {
-    "show_fps": true,
-    "window_name": "Face Recognition"
-  }
+"video_source": {
+  "type": "webcam",
+  "index": 0,
+  "width": 1280,
+  "height": 720,
+  "buffer_size": 1
 }
 ```
 
----
+### RTSP
 
-## ▶️ Executar
-
-```bash
-python face_detection.py
+```json
+"video_source": {
+  "type": "rtsp",
+  "url": "rtsp://user:password@camera-ip:554/cam/realmonitor?channel=1&subtype=0",
+  "buffer_size": 1
+}
 ```
 
-Pressione `Q` para sair.
-
----
-
-## 🧠 Como funciona
-
-O pipeline realiza as seguintes etapas:
-
-1. Carrega o modelo `InsightFace`
-2. Lê as imagens de referência em `img/references/`
-3. Detecta a face em cada imagem de referência
-4. Gera embeddings faciais
-5. Calcula um embedding médio por pessoa
-6. Captura frames da webcam
-7. Detecta faces em tempo real
-8. Compara cada face com as referências usando similaridade de cosseno
-9. Exibe o nome da pessoa ou `Desconhecido`
-
----
-
-## 📂 Como adicionar novas pessoas
-
-Cada pessoa deve ter uma pasta própria dentro de:
+For Intelbras cameras, use the main stream for best face detail:
 
 ```text
-img/references/
+rtsp://user:password@ip:554/cam/realmonitor?channel=1&subtype=0
 ```
 
-Exemplo:
+Use `subtype=1` only if latency or bandwidth is more important than recognition quality.
+
+## Reference Images
+
+Add one folder per person:
 
 ```text
 img/references/joao_lucas/
-    joao_lucas_1.png
-    joao_lucas_2.png
+    image_1.jpg
+    image_2.png
 
-img/references/amanda/
-    amanda_1.png
+img/references/maria_silva/
+    image_1.jpg
 ```
 
-O nome exibido na tela será baseado no nome da pasta.
-
-Exemplo:
+Folder names become display names:
 
 ```text
 joao_lucas -> Joao Lucas
-amanda -> Amanda
+maria_silva -> Maria Silva
 ```
 
----
+Use clear face images with varied lighting and angles. The loader selects the largest face when multiple faces are detected in a reference image, normalizes each embedding, and stores a normalized mean embedding per person.
 
-## 🎯 Ajustes importantes
+## Recognition Stability
 
-### Threshold de reconhecimento
-
-Controla o quão parecido o rosto precisa ser para ser aceito como uma pessoa conhecida.
-
-| Valor | Comportamento |
-| ----- | ------------- |
-| 0.30  | Mais permissivo |
-| 0.35  | Flexível/equilibrado |
-| 0.50  | Mais rigoroso |
-| 0.60+ | Muito rigoroso |
-
-Exemplo recomendado para inferência mais flexível:
-
-```json
-"threshold": 0.35
-```
-
----
-
-### Margin
-
-Controla a diferença mínima entre o melhor candidato e o segundo melhor candidato.
-
-| Valor | Comportamento |
-| ----- | ------------- |
-| 0.01  | Mais flexível |
-| 0.03  | Moderado |
-| 0.05+ | Mais seguro, porém mais rígido |
-
-Exemplo recomendado:
-
-```json
-"margin": 0.01
-```
-
----
-
-### Detection threshold
-
-Controla o quão sensível o detector de faces será.
-
-| Valor | Comportamento |
-| ----- | ------------- |
-| 0.1   | Muito permissivo |
-| 0.3   | Equilibrado |
-| 0.5+  | Mais rigoroso |
-
-Exemplo recomendado:
-
-```json
-"detection_threshold": 0.1
-```
-
----
-
-### det_size
-
-Controla o tamanho usado pelo detector.
-
-| Valor | Uso |
-| ----- | --- |
-| [640, 640] | Mais rápido |
-| [1024, 1024] | Mais preciso, porém mais pesado |
-| [1280, 1280] | Mais robusto, porém mais lento |
-
----
-
-## ⚠️ Atenção: BGR vs RGB
-
-O OpenCV lê imagens em formato **BGR**, enquanto muitos modelos de visão computacional trabalham melhor com **RGB**.
-
-Por isso, antes de passar imagens para o modelo, use:
-
-```python
-image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-faces = app.get(image_rgb)
-```
-
-O mesmo vale para frames da webcam:
-
-```python
-frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-last_faces = app.get(frame_rgb)
-```
-
-Esse ajuste é essencial para evitar falhas como:
-
-```text
-[AVISO] Nenhuma face detectada
-```
-
----
-
-## ⚡ GPU com CUDA
-
-Para validar se a GPU está sendo usada, ao executar o script deve aparecer algo parecido com:
-
-```text
-Applied providers: ['CUDAExecutionProvider', 'CPUExecutionProvider']
-```
-
-Se aparecer apenas:
-
-```text
-Applied providers: ['CPUExecutionProvider']
-```
-
-então a GPU não foi carregada corretamente.
-
----
-
-## 🧪 Problemas comuns
-
-### Nenhuma face detectada nas referências
-
-Possíveis causas:
-
-- Imagem foi lida em BGR e não convertida para RGB
-- Caminho da imagem está incorreto
-- Imagem não foi carregada corretamente pelo OpenCV
-- `detection_threshold` está muito alto
-- `det_size` está muito baixo para o caso
-
-Sugestão:
-
-```python
-print(image_path.resolve())
-print(image_path.exists())
-print(image.shape)
-```
-
----
-
-### Reconhecimento muito rígido
-
-Reduza os valores no `config.json`:
+Recognition is based on track history, not a single frame.
 
 ```json
 "recognition": {
-  "threshold": 0.35,
-  "margin": 0.01,
-  "process_every_n_frames": 3
+  "process_every_n_frames": 2,
+  "recognition_window_frames": 12,
+  "min_votes_to_confirm": 5,
+  "min_average_score": 0.35,
+  "candidate_min_score": 0.25,
+  "max_unknown_frames": 20
 }
 ```
 
----
+A track becomes `confirmed` only when the same name appears at least `min_votes_to_confirm` times in the last `recognition_window_frames`, and those votes have an average score greater than or equal to `min_average_score`.
 
-### Reconhecimento muito permissivo
+`candidate_min_score` is intentionally lower than the confirmation score so movement and motion blur do not discard every useful frame.
 
-Aumente os valores:
+## Face Quality
 
 ```json
-"recognition": {
-  "threshold": 0.50,
-  "margin": 0.05,
-  "process_every_n_frames": 3
+"quality": {
+  "min_face_width": 70,
+  "min_face_height": 70,
+  "min_blur_score": 25.0,
+  "min_detection_score": 0.1
 }
 ```
 
----
+Faces below the minimum size or blur threshold are ignored. Blur is measured with Laplacian variance on the face crop.
 
-### GPU não funciona
+## Tracking
 
-Verifique:
+```json
+"tracking": {
+  "max_center_distance": 180,
+  "max_missing_frames": 20
+}
+```
 
-- CUDA instalado
-- cuDNN instalado
-- `onnxruntime-gpu` instalado
-- Caminhos `cuda_path` e `cudnn_path` corretos no `config.json`
+The tracker is intentionally lightweight. It matches detections to existing tracks by face-center distance, keeps a short prediction history, and removes stale tracks after too many missing frames.
 
----
+## Cache
 
-## 📈 Performance esperada
+```json
+"cache": {
+  "enabled": true,
+  "path": "data/embeddings_cache.pkl",
+  "force_rebuild": false
+}
+```
 
-| Setup | FPS estimado |
-| ----- | ------------ |
-| CPU   | 5–15 FPS |
-| GPU   | 20–60 FPS |
+The cache stores each person name, mean embedding, image count, and a source hash based on reference image paths, sizes, and modification timestamps.
 
-A performance depende de:
+Set `force_rebuild` to `true` after changing reference images if you want to force a fresh embedding build.
 
-- Modelo usado
-- Resolução da webcam
-- `det_size`
-- Quantidade de faces no frame
-- Frequência definida em `process_every_n_frames`
+## Logging
 
----
+Events are written to:
 
-## 🚀 Próximos passos
+```text
+logs/recognition_events.csv
+```
 
-Possíveis melhorias futuras:
+Columns:
 
-- Cache de embeddings para não recalcular referências sempre
-- Tracking de faces entre frames
-- Banco vetorial com FAISS
-- API com FastAPI
-- Interface com Streamlit
-- Logs estruturados
-- Exportação de eventos de reconhecimento
-- Deploy em ambiente controlado
+```text
+timestamp, track_id, name, status, avg_score, votes, frame_number, x1, y1, x2, y2
+```
 
----
+The logger records status changes, confirmations, and failed unknown attempts after enough frames. It avoids writing a duplicate event on every frame.
 
-## 👨‍💻 Autor
+## Run
 
-[João Lucas Oliveira](https://www.linkedin.com/in/joaodosdados/)
+```powershell
+python face_detection.py
+```
+
+Press `Q` in the video window to exit.
+
+The terminal prints:
+
+- registered people
+- video source
+- GPU/CPU mode
+- active tracks
+- average FPS
+- confirmed recognitions
+
+## Visualization
+
+- Green box: confirmed
+- Yellow box: candidate
+- Red box: unknown
+
+Each box displays:
+
+- track ID
+- display name
+- status
+- average score
+- vote count
+
+## GPU Check
+
+```powershell
+python teste.py
+```
+
+If GPU support is available, `CUDAExecutionProvider` should appear. If it does not, the MVP can still run on CPU, but FPS will likely be lower.
+
+## Privacy And Safety
+
+- Do not commit real reference images.
+- Do not commit real RTSP credentials.
+- Do not use this MVP to make biometric access-control decisions.
+- Collect consent from participants before testing.
+- Treat logs and embeddings as sensitive biometric-adjacent data.
+
+The `.gitignore` keeps `config.json`, reference images, logs, runtime data, `.venv`, and `__pycache__` out of git while preserving `.gitkeep` files for folder structure.
