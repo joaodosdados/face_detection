@@ -1,34 +1,34 @@
-# Biometric Access Control MVP
+# MVP de Controle de Acesso Biométrico
 
-Python MVP for real-world face recognition testing with InsightFace, OpenCV, temporal voting, lightweight tracking, quality filtering, RTSP/webcam input, embedding cache, and CSV event logs.
+MVP em Python para testes reais de reconhecimento facial com InsightFace, OpenCV, votação temporal, rastreamento leve, filtro de qualidade, entrada por webcam/RTSP, cache de embeddings e logs em CSV.
 
-This project is for field evaluation only. It does not open doors, unlock turnstiles, or trigger any real biometric access-control action.
+Este projeto é apenas para avaliação em campo. Ele não abre portas, não libera catracas e não dispara nenhuma ação real de controle de acesso biométrico.
 
-## What This MVP Does
+## O Que Este MVP Faz
 
-- Reads video from a webcam or RTSP camera, including Intelbras-style RTSP URLs
-- Detects faces with InsightFace `buffalo_l`
-- Converts BGR to RGB before every model inference
-- Keeps BGR frames for OpenCV display
-- Filters small and blurry faces before recognition
-- Tracks faces across frames with simple center-distance matching
-- Uses temporal voting instead of trusting one frame
-- Confirms an identity only after enough consistent votes
-- Logs recognition events to CSV
-- Caches reference embeddings to speed up startup
-- Shows bounding boxes, track IDs, scores, votes, and FPS
-- Prints runtime metrics in the terminal
+- Lê vídeo de webcam ou câmera RTSP, incluindo URLs no padrão Intelbras
+- Detecta rostos com InsightFace usando o modelo `buffalo_l`
+- Converte BGR para RGB antes de toda inferência do modelo
+- Mantém os frames em BGR para exibição com OpenCV
+- Filtra rostos pequenos ou borrados antes do reconhecimento
+- Rastreia rostos entre frames com distância entre centros
+- Usa votação temporal em vez de confiar em um único frame
+- Confirma uma identidade somente após votos consistentes
+- Registra eventos de reconhecimento em CSV
+- Usa cache de embeddings para acelerar a inicialização
+- Mostra caixas, track IDs, scores, votos e FPS
+- Exibe métricas de execução no terminal
 
-Target scale for this MVP: around 10 registered people.
+Escala-alvo deste MVP: cerca de 10 pessoas cadastradas.
 
-## Project Structure
+## Estrutura Do Projeto
 
 ```text
 face_detection/
 |-- face_detection.py
 |-- dashboard.py
 |-- config.example.json
-|-- config.json                 # local/private, ignored by git
+|-- config.json                 # local/privado, ignorado pelo git
 |-- requirements.txt
 |-- req.txt
 |-- README.md
@@ -58,7 +58,7 @@ face_detection/
     `-- .gitkeep
 ```
 
-## Installation
+## Instalação
 
 ```powershell
 python -m venv .venv
@@ -66,29 +66,29 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-`req.txt` is kept for compatibility with the earlier project setup. New installs should use `requirements.txt`.
+O arquivo `req.txt` foi mantido por compatibilidade com a primeira versão do projeto. Para novas instalações, prefira `requirements.txt`.
 
-## Architecture
+## Arquitetura
 
-The project has two execution modes that share the same recognition engine.
+O projeto tem dois modos de execução que compartilham o mesmo motor de reconhecimento.
 
 ```text
 face_detection.py
 ```
 
-Runs the MVP with the classic OpenCV window.
+Executa o MVP com a janela clássica do OpenCV.
 
 ```text
 dashboard.py
 ```
 
-Runs a local FastAPI backend for the browser dashboard.
+Executa um backend FastAPI local para o dashboard no navegador.
 
 ```text
 src/runtime.py
 ```
 
-Contains the shared recognition loop. It opens the video source, runs InsightFace, updates tracking/voting state, logs events, saves unknown snapshots, and keeps the latest frame/metrics available for the dashboard.
+Contém o loop compartilhado de reconhecimento. Ele abre a fonte de vídeo, executa o InsightFace, atualiza tracking/votação, registra eventos, salva snapshots de desconhecidos e mantém o frame/métricas mais recentes disponíveis para o dashboard.
 
 ```text
 web/templates/index.html
@@ -96,28 +96,28 @@ web/static/app.js
 web/static/styles.css
 ```
 
-Contains the frontend. The browser reads the live MJPEG stream from `/video`, polls `/api/state` every second, renders unknown alerts, and calls `/api/stop` when `Stop Camera` is clicked.
+Contém o frontend. O navegador lê o stream MJPEG ao vivo em `/video`, consulta `/api/state` a cada segundo, renderiza alertas de desconhecidos e chama `/api/stop` quando o botão `Stop Camera` é clicado.
 
-Backend routes:
+Rotas do backend:
 
 ```text
-GET  /           dashboard HTML
-GET  /video      live MJPEG stream
-GET  /api/state  metrics, tracks, and recent events as JSON
-POST /api/stop   stops the camera runtime
+GET  /           HTML do dashboard
+GET  /video      stream MJPEG ao vivo
+GET  /api/state  métricas, tracks e eventos recentes em JSON
+POST /api/stop   para o runtime da câmera
 ```
 
-`uvicorn` is the local web server used to run the FastAPI app.
+`uvicorn` é o servidor web local usado para executar a aplicação FastAPI.
 
-## Configuration
+## Configuração
 
-Create your local config from the safe example:
+Crie seu arquivo local a partir do exemplo seguro:
 
 ```powershell
 Copy-Item config.example.json config.json
 ```
 
-`config.json` is ignored by git because it may contain camera credentials and local CUDA paths.
+O `config.json` é ignorado pelo git porque pode conter credenciais de câmera e caminhos locais de CUDA/cuDNN.
 
 ### Webcam
 
@@ -141,17 +141,17 @@ Copy-Item config.example.json config.json
 }
 ```
 
-For Intelbras cameras, use the main stream for best face detail:
+Para câmeras Intelbras, use o stream principal para obter mais detalhes do rosto:
 
 ```text
 rtsp://user:password@ip:554/cam/realmonitor?channel=1&subtype=0
 ```
 
-Use `subtype=1` only if latency or bandwidth is more important than recognition quality.
+Use `subtype=1` apenas se latência ou banda forem mais importantes que qualidade de reconhecimento.
 
-## Reference Images
+## Imagens De Referência
 
-Add one folder per person:
+Adicione uma pasta por pessoa:
 
 ```text
 img/references/joao_lucas/
@@ -162,18 +162,18 @@ img/references/maria_silva/
     image_1.jpg
 ```
 
-Folder names become display names:
+O nome da pasta vira o nome exibido:
 
 ```text
 joao_lucas -> Joao Lucas
 maria_silva -> Maria Silva
 ```
 
-Use clear face images with varied lighting and angles. The loader selects the largest face when multiple faces are detected in a reference image, normalizes each embedding, and stores a normalized mean embedding per person.
+Use imagens nítidas, com boa iluminação e variação de ângulo. O carregador seleciona o maior rosto quando há mais de uma face na imagem, normaliza cada embedding e salva um embedding médio normalizado por pessoa.
 
-## Recognition Stability
+## Estabilidade Do Reconhecimento
 
-Recognition is based on track history, not a single frame.
+O reconhecimento é baseado no histórico do track, não em um único frame.
 
 ```json
 "recognition": {
@@ -186,11 +186,11 @@ Recognition is based on track history, not a single frame.
 }
 ```
 
-A track becomes `confirmed` only when the same name appears at least `min_votes_to_confirm` times in the last `recognition_window_frames`, and those votes have an average score greater than or equal to `min_average_score`.
+Um track vira `confirmed` somente quando o mesmo nome aparece pelo menos `min_votes_to_confirm` vezes dentro dos últimos `recognition_window_frames`, e esses votos têm score médio maior ou igual a `min_average_score`.
 
-`candidate_min_score` is intentionally lower than the confirmation score so movement and motion blur do not discard every useful frame.
+`candidate_min_score` é intencionalmente menor que o score de confirmação para que movimento e blur não descartem frames úteis cedo demais.
 
-## Face Quality
+## Qualidade Da Face
 
 ```json
 "quality": {
@@ -201,7 +201,7 @@ A track becomes `confirmed` only when the same name appears at least `min_votes_
 }
 ```
 
-Faces below the minimum size or blur threshold are ignored. Blur is measured with Laplacian variance on the face crop.
+Rostos abaixo do tamanho mínimo ou abaixo do limite de nitidez são ignorados. O blur é medido com variância do Laplaciano no crop do rosto.
 
 ## Tracking
 
@@ -212,7 +212,7 @@ Faces below the minimum size or blur threshold are ignored. Blur is measured wit
 }
 ```
 
-The tracker is intentionally lightweight. It matches detections to existing tracks by face-center distance, keeps a short prediction history, and removes stale tracks after too many missing frames.
+O tracker é propositalmente leve. Ele associa novas detecções a tracks existentes pela distância entre o centro dos rostos, mantém um histórico curto de predições e remove tracks antigos após muitos frames sem detecção.
 
 ## Cache
 
@@ -224,117 +224,117 @@ The tracker is intentionally lightweight. It matches detections to existing trac
 }
 ```
 
-The cache stores each person name, mean embedding, image count, and a source hash based on reference image paths, sizes, and modification timestamps.
+O cache guarda o nome da pessoa, embedding médio, quantidade de imagens e um hash gerado a partir dos caminhos, tamanhos e datas de modificação das imagens de referência.
 
-Set `force_rebuild` to `true` after changing reference images if you want to force a fresh embedding build.
+Defina `force_rebuild` como `true` depois de alterar imagens de referência caso queira forçar a reconstrução dos embeddings.
 
-## Logging
+## Logs
 
-Events are written to:
+Os eventos são salvos em:
 
 ```text
 logs/recognition_events.csv
 ```
 
-Columns:
+Colunas:
 
 ```text
 timestamp, track_id, name, status, avg_score, votes, frame_number, x1, y1, x2, y2, snapshot_path
 ```
 
-The logger records status changes, confirmations, and failed unknown attempts after enough frames. It avoids writing a duplicate event on every frame.
+O logger registra mudanças de status, confirmações e falhas de reconhecimento desconhecido após frames suficientes. Ele evita escrever evento duplicado a cada frame.
 
-Face snapshots are saved only for `unknown` alerts:
+Snapshots de rosto são salvos somente para alertas `unknown`:
 
 ```text
 logs/snapshots/
   unknown/
 ```
 
-## Run
+## Executar
 
 ```powershell
 python face_detection.py
 ```
 
-Press `Q` in the video window to exit.
+Pressione `Q` na janela de vídeo para sair.
 
-The terminal prints:
+O terminal mostra:
 
-- registered people
-- video source
-- GPU/CPU mode
-- active tracks
-- average FPS
-- confirmed recognitions
+- pessoas cadastradas
+- fonte de vídeo
+- modo GPU/CPU
+- tracks ativos
+- FPS médio
+- reconhecimentos confirmados
 
 ## Dashboard
 
-Run the local operator dashboard with:
+Execute o dashboard local com:
 
 ```powershell
 uvicorn dashboard:app --host 127.0.0.1 --port 8000
 ```
 
-Then open:
+Depois abra:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-The dashboard shows:
+O dashboard mostra:
 
-- live camera feed
-- FPS and runtime mode
-- unknown alert cards with face snapshots
-- confirmed recognition count
-- registered people count
-- recent CSV events
+- câmera ao vivo
+- FPS e modo de execução
+- cards de alerta `unknown` com snapshot do rosto
+- contagem de reconhecimentos confirmados
+- quantidade de pessoas cadastradas
+- eventos recentes do CSV
 
-The dashboard is still evaluation-only. It displays and logs recognition state, but it does not trigger biometric access-control actions.
+O dashboard ainda é apenas para avaliação. Ele exibe e registra o estado do reconhecimento, mas não dispara nenhuma ação real de controle de acesso biométrico.
 
-The dashboard backend is FastAPI, served locally by `uvicorn`. The frontend is plain HTML, CSS, and JavaScript to keep the MVP lightweight and easy to inspect.
+O backend do dashboard é FastAPI, servido localmente pelo `uvicorn`. O frontend usa HTML, CSS e JavaScript puros para manter o MVP leve e fácil de inspecionar.
 
-To stop cleanly:
+Para encerrar corretamente:
 
-1. Click `Stop Camera` in the dashboard.
-2. Return to the terminal running `uvicorn`.
-3. Press `Ctrl+C`.
+1. Clique em `Stop Camera` no dashboard.
+2. Volte ao terminal onde o `uvicorn` está rodando.
+3. Pressione `Ctrl+C`.
 
-On Windows, if a camera or RTSP stream blocks shutdown, press `Ctrl+Break` in the terminal. Closing the terminal is the last-resort option.
+No Windows, se uma câmera ou stream RTSP bloquear o encerramento, pressione `Ctrl+Break` no terminal. Fechar o terminal deve ser a última opção.
 
-## Visualization
+## Visualização
 
-- Green box: confirmed
-- Yellow box: candidate
-- Red box: unknown
+- Caixa verde: `confirmed`
+- Caixa amarela: `candidate`
+- Caixa vermelha: `unknown`
 
-Each box displays:
+Cada caixa mostra:
 
 - track ID
-- display name
+- nome exibido
 - status
-- average score
-- vote count
+- score médio
+- quantidade de votos
 
-## GPU Check
+## Verificar GPU
 
 ```powershell
 python teste.py
 ```
 
-If GPU support is available, `CUDAExecutionProvider` should appear. If it does not, the MVP can still run on CPU, but FPS will likely be lower.
+Se a GPU estiver disponível, `CUDAExecutionProvider` deve aparecer. Se não aparecer, o MVP ainda pode rodar em CPU, mas o FPS provavelmente será menor.
 
-## Privacy And Safety
+## Privacidade E Segurança
 
-- Do not commit real reference images.
-- Do not commit real RTSP credentials.
-- Do not use this MVP to make biometric access-control decisions.
-- Collect consent from participants before testing.
-- Treat logs and embeddings as sensitive biometric-adjacent data.
+- Não faça commit de imagens reais de referência.
+- Não faça commit de credenciais RTSP reais.
+- Não use este MVP para tomar decisões reais de controle de acesso biométrico.
+- Colete consentimento dos participantes antes dos testes.
+- Trate logs e embeddings como dados sensíveis relacionados à biometria.
 
-The `.gitignore` keeps `config.json`, reference images, logs, runtime data, `.venv`, and `__pycache__` out of git while preserving `.gitkeep` files for folder structure.
+O `.gitignore` mantém `config.json`, imagens de referência, logs, dados de runtime, `.venv` e `__pycache__` fora do git, preservando os arquivos `.gitkeep` para manter a estrutura das pastas.
 
-## Author
+## Autor
 
 [Joao Lucas Oliveira](https://www.linkedin.com/in/joaodosdados/)
