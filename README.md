@@ -26,6 +26,7 @@ Target scale for this MVP: around 10 registered people.
 ```text
 face_detection/
 |-- face_detection.py
+|-- dashboard.py
 |-- config.example.json
 |-- config.json                 # local/private, ignored by git
 |-- requirements.txt
@@ -39,8 +40,15 @@ face_detection/
 |   |-- quality.py
 |   |-- recognition.py
 |   |-- references.py
+|   |-- runtime.py
 |   |-- tracking.py
 |   `-- video.py
+|-- web/
+|   |-- static/
+|   |   |-- app.js
+|   |   `-- styles.css
+|   `-- templates/
+|       `-- index.html
 |-- img/
 |   `-- references/
 |       `-- .gitkeep
@@ -59,6 +67,47 @@ pip install -r requirements.txt
 ```
 
 `req.txt` is kept for compatibility with the earlier project setup. New installs should use `requirements.txt`.
+
+## Architecture
+
+The project has two execution modes that share the same recognition engine.
+
+```text
+face_detection.py
+```
+
+Runs the MVP with the classic OpenCV window.
+
+```text
+dashboard.py
+```
+
+Runs a local FastAPI backend for the browser dashboard.
+
+```text
+src/runtime.py
+```
+
+Contains the shared recognition loop. It opens the video source, runs InsightFace, updates tracking/voting state, logs events, saves unknown snapshots, and keeps the latest frame/metrics available for the dashboard.
+
+```text
+web/templates/index.html
+web/static/app.js
+web/static/styles.css
+```
+
+Contains the frontend. The browser reads the live MJPEG stream from `/video`, polls `/api/state` every second, renders unknown alerts, and calls `/api/stop` when `Stop Camera` is clicked.
+
+Backend routes:
+
+```text
+GET  /           dashboard HTML
+GET  /video      live MJPEG stream
+GET  /api/state  metrics, tracks, and recent events as JSON
+POST /api/stop   stops the camera runtime
+```
+
+`uvicorn` is the local web server used to run the FastAPI app.
 
 ## Configuration
 
@@ -190,10 +239,17 @@ logs/recognition_events.csv
 Columns:
 
 ```text
-timestamp, track_id, name, status, avg_score, votes, frame_number, x1, y1, x2, y2
+timestamp, track_id, name, status, avg_score, votes, frame_number, x1, y1, x2, y2, snapshot_path
 ```
 
 The logger records status changes, confirmations, and failed unknown attempts after enough frames. It avoids writing a duplicate event on every frame.
+
+Face snapshots are saved only for `unknown` alerts:
+
+```text
+logs/snapshots/
+  unknown/
+```
 
 ## Run
 
@@ -211,6 +267,41 @@ The terminal prints:
 - active tracks
 - average FPS
 - confirmed recognitions
+
+## Dashboard
+
+Run the local operator dashboard with:
+
+```powershell
+uvicorn dashboard:app --host 127.0.0.1 --port 8000
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000
+```
+
+The dashboard shows:
+
+- live camera feed
+- FPS and runtime mode
+- unknown alert cards with face snapshots
+- confirmed recognition count
+- registered people count
+- recent CSV events
+
+The dashboard is still evaluation-only. It displays and logs recognition state, but it does not trigger biometric access-control actions.
+
+The dashboard backend is FastAPI, served locally by `uvicorn`. The frontend is plain HTML, CSS, and JavaScript to keep the MVP lightweight and easy to inspect.
+
+To stop cleanly:
+
+1. Click `Stop Camera` in the dashboard.
+2. Return to the terminal running `uvicorn`.
+3. Press `Ctrl+C`.
+
+On Windows, if a camera or RTSP stream blocks shutdown, press `Ctrl+Break` in the terminal. Closing the terminal is the last-resort option.
 
 ## Visualization
 
