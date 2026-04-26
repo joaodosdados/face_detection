@@ -243,3 +243,7 @@ If GPU support is available, `CUDAExecutionProvider` should appear. If it does n
 - Treat logs and embeddings as sensitive biometric-adjacent data.
 
 The `.gitignore` keeps `config.json`, reference images, logs, runtime data, `.venv`, and `__pycache__` out of git while preserving `.gitkeep` files for folder structure.
+
+## Author
+
+[Joao Lucas Oliveira](https://www.linkedin.com/in/joaodosdados/)
