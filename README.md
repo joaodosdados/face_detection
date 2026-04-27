@@ -32,6 +32,9 @@ face_detection/
 |-- requirements.txt
 |-- req.txt
 |-- README.md
+|-- docs/
+|   |-- PROJECT_HANDOFF.md
+|   `-- biometric_access.png
 |-- src/
 |   |-- config.py
 |   |-- drawing.py
@@ -304,6 +307,8 @@ Para encerrar corretamente:
 No Windows, se uma câmera ou stream RTSP bloquear o encerramento, pressione `Ctrl+Break` no terminal. Fechar o terminal deve ser a última opção.
 
 ## Visualização
+
+![Dashboard do controle de acesso biométrico](docs/biometric_access.png)
 
 - Caixa verde: `confirmed`
 - Caixa amarela: `candidate`
