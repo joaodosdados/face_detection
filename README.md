@@ -4,6 +4,8 @@ MVP em Python para testes reais de reconhecimento facial com InsightFace, OpenCV
 
 Este projeto é apenas para avaliação em campo. Ele não abre portas, não libera catracas e não dispara nenhuma ação real de controle de acesso biométrico.
 
+![Dashboard do controle de acesso biométrico](docs/biometric_access.png)
+
 ## O Que Este MVP Faz
 
 - Lê vídeo de webcam ou câmera RTSP, incluindo URLs no padrão Intelbras
@@ -307,8 +309,6 @@ Para encerrar corretamente:
 No Windows, se uma câmera ou stream RTSP bloquear o encerramento, pressione `Ctrl+Break` no terminal. Fechar o terminal deve ser a última opção.
 
 ## Visualização
-
-![Dashboard do controle de acesso biométrico](docs/biometric_access.png)
 
 - Caixa verde: `confirmed`
 - Caixa amarela: `candidate`
